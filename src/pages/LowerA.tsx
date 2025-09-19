@@ -1,33 +1,20 @@
-import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { ExerciseCard } from "@/components/training/ExerciseCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap } from "lucide-react";
+import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
-  { name: "Squats/Legpress", weight: 100 },
-  { name: "Leg Extensions", weight: 45 },
-  { name: "Leg Curls", weight: 40 },
-  { name: "Bulgarians", weight: 20 },
-  { name: "Calf Raises", weight: 80 },
+  "Squats/Legpress",
+  "Leg Extensions",
+  "Leg Curls",
+  "Bulgarians",
+  "Calf Raises"
 ];
 
 const LowerA = () => {
-  const [exerciseWeights, setExerciseWeights] = useState(
-    exercises.reduce((acc, exercise) => ({
-      ...acc,
-      [exercise.name]: exercise.weight
-    }), {} as Record<string, number>)
-  );
-
-  const handleWeightUpdate = (exerciseName: string, newWeight: number) => {
-    setExerciseWeights(prev => ({
-      ...prev,
-      [exerciseName]: newWeight
-    }));
-    // In a real app, this would save to the database
-  };
+  const { weights, loading, updateWeight } = useExerciseWeights(exercises);
 
   return (
     <Layout>
@@ -73,12 +60,12 @@ const LowerA = () => {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {exercises.map((exercise) => (
+          {exercises.map((exerciseName) => (
             <ExerciseCard
-              key={exercise.name}
-              name={exercise.name}
-              currentWeight={exerciseWeights[exercise.name]}
-              onWeightUpdate={(newWeight) => handleWeightUpdate(exercise.name, newWeight)}
+              key={exerciseName}
+              name={exerciseName}
+              currentWeight={weights[exerciseName] || 0}
+              onWeightUpdate={(newWeight) => updateWeight(exerciseName, newWeight)}
             />
           ))}
         </div>

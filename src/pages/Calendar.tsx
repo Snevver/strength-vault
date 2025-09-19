@@ -3,17 +3,15 @@ import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Flame, Target } from "lucide-react";
+import { Calendar as CalendarIcon, Flame, Target, Loader2 } from "lucide-react";
+import { useWorkoutCalendar } from "@/hooks/useWorkoutCalendar";
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const { workoutDays, loading, toggleWorkoutDay } = useWorkoutCalendar();
 
-  // Sample workout data - in a real app this would come from the database
-  const workoutDays = new Set([
-    "2024-09-01", "2024-09-03", "2024-09-05", "2024-09-08", 
-    "2024-09-10", "2024-09-12", "2024-09-15", "2024-09-17", 
-    "2024-09-19", "2024-09-22", "2024-09-24", "2024-09-26"
-  ]);
+  const workoutCount = workoutDays.size;
+  const currentStreak = 5; // This would be calculated from actual data
 
   const generateCalendarDays = () => {
     const today = new Date();
@@ -45,9 +43,23 @@ const Calendar = () => {
     return days;
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Workout Calendar</h1>
+            <p className="text-muted-foreground">Loading your workout history...</p>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   const calendarDays = generateCalendarDays();
-  const workoutCount = workoutDays.size;
-  const currentStreak = 5; // This would be calculated from actual data
 
   return (
     <Layout>
@@ -100,7 +112,7 @@ const Calendar = () => {
                                 ? "ring-2 ring-primary"
                                 : ""
                             }`}
-                            onClick={() => setSelectedDate(day.dateString)}
+                            onClick={() => toggleWorkoutDay(day.dateString)}
                           >
                             {day.day}
                           </Button>

@@ -9,32 +9,43 @@ import {
   Zap,
   BarChart3,
   Trophy,
-  Flame
+  Flame,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const quickStats = [
-  { label: "Workouts This Month", value: "12", icon: Calendar, trend: "+3" },
-  { label: "Personal Records", value: "8", icon: Trophy, trend: "+2" },
-  { label: "Current Streak", value: "5 days", icon: Flame, trend: "🔥" },
-  { label: "Total Sessions", value: "147", icon: BarChart3, trend: "+12" },
-];
-
-const recentWorkouts = [
-  { day: "Today", type: "Upper A", exercises: 7, duration: "45min" },
-  { day: "Yesterday", type: "Lower B", exercises: 5, duration: "38min" },
-  { day: "2 days ago", type: "Upper B", exercises: 7, duration: "42min" },
-  { day: "3 days ago", type: "Lower A", exercises: 5, duration: "40min" },
-];
-
-const quickActions = [
-  { name: "Upper A", href: "/upper-a", icon: Zap, description: "Chest Focus", color: "bg-primary" },
-  { name: "Upper B", href: "/upper-b", icon: Target, description: "Back Focus", color: "bg-primary" },
-  { name: "Lower A", href: "/lower-a", icon: Zap, description: "Quad Focus", color: "bg-success" },
-  { name: "Lower B", href: "/lower-b", icon: Target, description: "Hamstring Focus", color: "bg-success" },
-];
+import { useDashboardData } from "@/hooks/useDashboardData";
 
 export const Dashboard = () => {
+  const { stats, recentWorkouts, loading } = useDashboardData();
+
+  const quickStats = [
+    { label: "Workouts This Month", value: stats.workoutsThisMonth.toString(), icon: Calendar, trend: "+3" },
+    { label: "Personal Records", value: stats.personalRecords.toString(), icon: Trophy, trend: "+2" },
+    { label: "Current Streak", value: `${stats.currentStreak} days`, icon: Flame, trend: "🔥" },
+    { label: "Total Sessions", value: stats.totalSessions.toString(), icon: BarChart3, trend: "+12" },
+  ];
+
+  const quickActions = [
+    { name: "Upper A", href: "/upper-a", icon: Zap, description: "Chest Focus", color: "bg-primary" },
+    { name: "Upper B", href: "/upper-b", icon: Target, description: "Back Focus", color: "bg-primary" },
+    { name: "Lower A", href: "/lower-a", icon: Zap, description: "Quad Focus", color: "bg-success" },
+    { name: "Lower B", href: "/lower-b", icon: Target, description: "Hamstring Focus", color: "bg-success" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">Loading your training data...</p>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -152,16 +163,20 @@ export const Dashboard = () => {
               {recentWorkouts.map((workout, index) => (
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
                   <div>
-                    <div className="font-medium">{workout.type}</div>
+                    <div className="font-medium">{workout.workout_type}</div>
                     <div className="text-sm text-muted-foreground">
-                      {workout.day} • {workout.exercises} exercises
+                      {new Date(workout.date).toLocaleDateString()} • {workout.exercises} exercises
                     </div>
                   </div>
                   <Badge variant="outline">
                     {workout.duration}
                   </Badge>
                 </div>
-              ))}
+              )) || (
+                <div className="text-center text-muted-foreground py-4">
+                  No recent workouts found. Start your first workout!
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

@@ -1,35 +1,22 @@
-import { useState } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { ExerciseCard } from "@/components/training/ExerciseCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Target } from "lucide-react";
+import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
-  { name: "Pulldown Beneden", weight: 60 },
-  { name: "Wide Row", weight: 50 },
-  { name: "Chest Press", weight: 65 },
-  { name: "Flys", weight: 15 },
-  { name: "Lat Raises Cable", weight: 12 },
-  { name: "Preacher Curl", weight: 30 },
-  { name: "Tricep Pushdown", weight: 35 },
+  "Pulldown Beneden",
+  "Wide Row",
+  "Chest Press",
+  "Flys",
+  "Lat Raises Cable",
+  "Preacher Curl",
+  "Tricep Pushdown"
 ];
 
 const UpperB = () => {
-  const [exerciseWeights, setExerciseWeights] = useState(
-    exercises.reduce((acc, exercise) => ({
-      ...acc,
-      [exercise.name]: exercise.weight
-    }), {} as Record<string, number>)
-  );
-
-  const handleWeightUpdate = (exerciseName: string, newWeight: number) => {
-    setExerciseWeights(prev => ({
-      ...prev,
-      [exerciseName]: newWeight
-    }));
-    // In a real app, this would save to the database
-  };
+  const { weights, loading, updateWeight } = useExerciseWeights(exercises);
 
   return (
     <Layout>
@@ -79,12 +66,12 @@ const UpperB = () => {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {exercises.map((exercise) => (
+          {exercises.map((exerciseName) => (
             <ExerciseCard
-              key={exercise.name}
-              name={exercise.name}
-              currentWeight={exerciseWeights[exercise.name]}
-              onWeightUpdate={(newWeight) => handleWeightUpdate(exercise.name, newWeight)}
+              key={exerciseName}
+              name={exerciseName}
+              currentWeight={weights[exerciseName] || 0}
+              onWeightUpdate={(newWeight) => updateWeight(exerciseName, newWeight)}
             />
           ))}
         </div>

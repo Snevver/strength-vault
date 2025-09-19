@@ -13,6 +13,7 @@ import {
   Target
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
@@ -28,8 +29,8 @@ export const Navigation = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogout = () => {
-    localStorage.removeItem("training-tracker-auth");
+  const handleLogout = async () => {
+    // Simple logout for now
     toast({
       title: "Logged out",
       description: "You've been successfully logged out.",

@@ -4,32 +4,20 @@ import { ExerciseCard } from "@/components/training/ExerciseCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap } from "lucide-react";
+import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
-  { name: "Incline Smith", weight: 70 },
-  { name: "Flys", weight: 15 },
-  { name: "Shoulder Press", weight: 40 },
-  { name: "Pulldown Lat", weight: 55 },
-  { name: "Row Cable", weight: 45 },
-  { name: "Bicep Curl", weight: 25 },
-  { name: "Tricep Overhead", weight: 30 },
+  "Incline Smith",
+  "Flys", 
+  "Shoulder Press",
+  "Pulldown Lat",
+  "Row Cable",
+  "Bicep Curl",
+  "Tricep Overhead"
 ];
 
 const UpperA = () => {
-  const [exerciseWeights, setExerciseWeights] = useState(
-    exercises.reduce((acc, exercise) => ({
-      ...acc,
-      [exercise.name]: exercise.weight
-    }), {} as Record<string, number>)
-  );
-
-  const handleWeightUpdate = (exerciseName: string, newWeight: number) => {
-    setExerciseWeights(prev => ({
-      ...prev,
-      [exerciseName]: newWeight
-    }));
-    // In a real app, this would save to the database
-  };
+  const { weights, loading, updateWeight } = useExerciseWeights(exercises);
 
   return (
     <Layout>
@@ -79,12 +67,12 @@ const UpperA = () => {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {exercises.map((exercise) => (
+          {exercises.map((exerciseName) => (
             <ExerciseCard
-              key={exercise.name}
-              name={exercise.name}
-              currentWeight={exerciseWeights[exercise.name]}
-              onWeightUpdate={(newWeight) => handleWeightUpdate(exercise.name, newWeight)}
+              key={exerciseName}
+              name={exerciseName}
+              currentWeight={weights[exerciseName] || 0}
+              onWeightUpdate={(newWeight) => updateWeight(exerciseName, newWeight)}
             />
           ))}
         </div>
