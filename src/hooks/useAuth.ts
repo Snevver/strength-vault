@@ -28,15 +28,21 @@ export const useAuth = () => {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/dashboard`;
-    
+    const redirectUrl = `${window.location.origin}/`;
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl
-      }
+        emailRedirectTo: redirectUrl,
+      },
     });
+
+    // Attempt immediate sign-in (works when email confirmation is auto-confirmed)
+    if (!error) {
+      await supabase.auth.signInWithPassword({ email, password });
+    }
+
     return { error };
   };
 
