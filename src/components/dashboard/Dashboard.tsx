@@ -16,13 +16,13 @@ import { Link } from "react-router-dom";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 export const Dashboard = () => {
-  const { stats, recentWorkouts, loading } = useDashboardData();
+  const { stats, recentWorkouts, monthlyProgress, loading } = useDashboardData();
 
   const quickStats = [
-    { label: "Workouts This Month", value: stats.workoutsThisMonth.toString(), icon: Calendar, trend: "+3" },
-    { label: "Personal Records", value: stats.personalRecords.toString(), icon: Trophy, trend: "+2" },
-    { label: "Current Streak", value: `${stats.currentStreak} days`, icon: Flame, trend: "🔥" },
-    { label: "Total Sessions", value: stats.totalSessions.toString(), icon: BarChart3, trend: "+12" },
+    { label: "Workouts This Month", value: stats.workoutsThisMonth.toString(), icon: Calendar },
+    { label: "Personal Records", value: stats.personalRecords.toString(), icon: Trophy },
+    { label: "Current Streak", value: `${stats.currentStreak} days`, icon: Flame },
+    { label: "Total Sessions", value: stats.totalSessions.toString(), icon: BarChart3 },
   ];
 
   const quickActions = [
@@ -67,9 +67,6 @@ export const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
-              <Badge variant="secondary" className="mt-1">
-                {stat.trend}
-              </Badge>
             </CardContent>
           </Card>
         ))}
@@ -120,34 +117,26 @@ export const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Chest Press</span>
-                <span className="text-success">+5kg</span>
+            {monthlyProgress.length > 0 ? (
+              monthlyProgress.slice(0, 4).map((progress) => (
+                <div key={progress.exercise_name} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{progress.exercise_name}</span>
+                    <span className={progress.progress > 0 ? "text-success" : progress.progress < 0 ? "text-destructive" : "text-muted-foreground"}>
+                      {progress.progress > 0 ? "+" : ""}{progress.progress}kg
+                    </span>
+                  </div>
+                  <Progress 
+                    value={progress.current_weight > 0 ? Math.min((progress.current_weight / 100) * 100, 100) : 0} 
+                    className="h-2" 
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-4">
+                No progress data available. Start tracking your workouts!
               </div>
-              <Progress value={85} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Squats</span>
-                <span className="text-success">+7.5kg</span>
-              </div>
-              <Progress value={92} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Pulldown</span>
-                <span className="text-success">+2.5kg</span>
-              </div>
-              <Progress value={78} className="h-2" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>RDLs</span>
-                <span className="text-success">+5kg</span>
-              </div>
-              <Progress value={88} className="h-2" />
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -160,19 +149,21 @@ export const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentWorkouts.map((workout, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                  <div>
-                    <div className="font-medium">{workout.workout_type}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(workout.date).toLocaleDateString()} • {workout.exercises} exercises
+              {recentWorkouts.length > 0 ? (
+                recentWorkouts.map((workout, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                    <div>
+                      <div className="font-medium">{workout.workout_type}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(workout.date).toLocaleDateString()} • {workout.exercises} exercises
+                      </div>
                     </div>
+                    <Badge variant="outline">
+                      {workout.duration}
+                    </Badge>
                   </div>
-                  <Badge variant="outline">
-                    {workout.duration}
-                  </Badge>
-                </div>
-              )) || (
+                ))
+              ) : (
                 <div className="text-center text-muted-foreground py-4">
                   No recent workouts found. Start your first workout!
                 </div>

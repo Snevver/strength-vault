@@ -2,134 +2,140 @@ import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Calendar, Plus } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TrendingUp, Calendar, Loader2 } from "lucide-react";
+import { useMonthlyProgress } from "@/hooks/useMonthlyProgress";
 
 const Progress = () => {
+  const { progressData, availableMonths, loading, getMonthLabel } = useMonthlyProgress();
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Monthly Progress</h1>
+            <p className="text-muted-foreground">Loading your progress data...</p>
+          </div>
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Monthly Progress</h1>
           <p className="text-muted-foreground">
-            Track your strength gains month by month
+            Track your strength gains month by month. Weights are automatically saved on the 1st of each month.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                2024 Progress Overview
-              </CardTitle>
-              <CardDescription>
-                Monthly maximum weights for all exercises
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Sample progress data */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground">UPPER BODY</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 rounded border">
-                      <span className="text-sm">Incline Smith</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">75kg</Badge>
-                        <Badge className="text-xs progress-up">+5kg</Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded border">
-                      <span className="text-sm">Chest Press</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">70kg</Badge>
-                        <Badge className="text-xs progress-up">+2.5kg</Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded border">
-                      <span className="text-sm">Pulldown Lat</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">60kg</Badge>
-                        <Badge className="text-xs progress-neutral">0kg</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-sm text-muted-foreground">LOWER BODY</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center p-2 rounded border">
-                      <span className="text-sm">Squats/Legpress</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">110kg</Badge>
-                        <Badge className="text-xs progress-up">+10kg</Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded border">
-                      <span className="text-sm">RDLs</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">85kg</Badge>
-                        <Badge className="text-xs progress-up">+5kg</Badge>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded border">
-                      <span className="text-sm">Leg Extensions</span>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">50kg</Badge>
-                        <Badge className="text-xs progress-up">+5kg</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Exercise Progress Table
+            </CardTitle>
+            <CardDescription>
+              Maximum weights recorded at the start of each month
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {availableMonths.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                <p>No monthly progress data available yet.</p>
+                <p className="text-sm mt-2">Progress will be automatically recorded on the 1st of each month.</p>
               </div>
-            </CardContent>
-          </Card>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[200px]">Exercise</TableHead>
+                      {availableMonths.map(month => (
+                        <TableHead key={month} className="text-center min-w-[100px]">
+                          {getMonthLabel(month)}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {progressData.map((exercise) => {
+                      // Only show exercises that have some data
+                      const hasData = Object.values(exercise.months).some(weight => weight > 0);
+                      if (!hasData) return null;
 
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4" />
-                  This Month
-                </CardTitle>
-                <CardDescription>September 2024</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center p-4 rounded-lg bg-success/10 border border-success/20">
-                  <div className="text-2xl font-bold text-success">+12.5kg</div>
-                  <div className="text-sm text-muted-foreground">Total progress</div>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-center p-2 rounded bg-muted/50">
-                    <div className="font-semibold">8</div>
-                    <div className="text-muted-foreground">PRs</div>
-                  </div>
-                  <div className="text-center p-2 rounded bg-muted/50">
-                    <div className="font-semibold">15</div>
-                    <div className="text-muted-foreground">Workouts</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      return (
+                        <TableRow key={exercise.exercise_name}>
+                          <TableCell className="font-medium">
+                            {exercise.exercise_name}
+                          </TableCell>
+                          {availableMonths.map(month => {
+                            const weight = exercise.months[month];
+                            const prevMonthIndex = availableMonths.indexOf(month) - 1;
+                            const prevWeight = prevMonthIndex >= 0 ? 
+                              exercise.months[availableMonths[prevMonthIndex]] : undefined;
+                            
+                            let progressBadge = null;
+                            if (weight && prevWeight) {
+                              const diff = weight - prevWeight;
+                              if (diff > 0) {
+                                progressBadge = (
+                                  <Badge variant="secondary" className="ml-1 text-xs bg-green-100 text-green-800">
+                                    +{diff}kg
+                                  </Badge>
+                                );
+                              } else if (diff < 0) {
+                                progressBadge = (
+                                  <Badge variant="secondary" className="ml-1 text-xs bg-red-100 text-red-800">
+                                    {diff}kg
+                                  </Badge>
+                                );
+                              }
+                            }
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full btn-touch" variant="outline">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Year
-                </Button>
-                <Button className="w-full btn-touch" variant="outline">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  View 2023 Data
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                            return (
+                              <TableCell key={month} className="text-center">
+                                {weight ? (
+                                  <div className="flex items-center justify-center">
+                                    <span>{weight}kg</span>
+                                    {progressBadge}
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground">-</span>
+                                )}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              How It Works
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>• Every 1st of the month, your current exercise weights are automatically saved</p>
+            <p>• This creates a monthly snapshot of your progress</p>
+            <p>• Green badges show weight increases, red badges show decreases</p>
+            <p>• Keep updating your weights on the training pages to track progress</p>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );
