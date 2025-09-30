@@ -118,7 +118,7 @@ Mobile-first, touch-friendly design optimized for gym use */
 
   /* Progress animations */
   .progress-up {
-    @apply text-success bg-success/10 border-success/20;
+    @apply text-primary bg-primary/10 border-primary/20;
   }
 
   .progress-down {

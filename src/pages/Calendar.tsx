@@ -127,7 +127,7 @@ const Calendar = () => {
                             variant="ghost"
                             className={`w-full h-full p-0 text-sm font-medium ${
                               day.hasWorkout
-                                ? "bg-success text-success-foreground hover:bg-success/80"
+                              ? "bg-primary text-primary-foreground hover:bg-primary/80"
                                 : "hover:bg-muted"
                             } ${
                               day.isToday
@@ -168,7 +168,7 @@ const Calendar = () => {
                   {/* Legend */}
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded bg-success" />
+                      <div className="w-4 h-4 rounded bg-primary" />
                       <span>Workout completed</span>
                     </div>
                     <div className="flex items-center gap-2">

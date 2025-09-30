@@ -142,7 +142,7 @@ const Progress = () => {
                             const diff = weight - prevWeight;
                             if (diff > 0) {
                               progressBadge = (
-                                <Badge variant="secondary" className="ml-1 text-xs bg-green-100 text-green-800">
+                                <Badge variant="secondary" className="ml-1 text-xs bg-primary/20 text-primary">
                                   +{diff}kg
                                 </Badge>
                               );

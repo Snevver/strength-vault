@@ -45,15 +45,32 @@ export const useDashboardData = () => {
     const fetchDashboardData = async () => {
       try {
         // Get workouts this month
-        const currentMonth = new Date();
+        const now = new Date();
+        const currentMonth = now;
         const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-        
+        const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+        // Format as local YYYY-MM-DD to match stored 'date' values (avoid UTC shifts)
+        const formatLocal = (d: Date) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        };
+
+        const firstDayStr = formatLocal(firstDay);
+        const lastDayStr = formatLocal(lastDay);
+        const todayStr = formatLocal(now);
+        // For the 'this month' stat we only want to count up to today, not the end of the month
+        const upperBound = todayStr < lastDayStr ? todayStr : lastDayStr;
+
         const { data: monthlyWorkouts } = await supabase
           .from('daily_workouts')
           .select('*')
           .eq('user_id', user.id)
           .eq('worked_out', true)
-          .gte('date', firstDay.toISOString().split('T')[0]);
+          .gte('date', firstDayStr)
+          .lte('date', upperBound);
 
         // Get total sessions
         const { data: totalWorkouts } = await supabase
@@ -93,12 +110,17 @@ export const useDashboardData = () => {
           .eq('year', currentMonth.getFullYear())
           .eq('month', currentMonth.getMonth() + 1);
 
+        // Determine previous month (1-based) and correct year when rolling over Jan -> Dec
+        const prevMonthIndex = currentMonth.getMonth() - 1; // 0-based
+        const prevMonth = prevMonthIndex >= 0 ? prevMonthIndex + 1 : 12; // 1-based month
+        const prevYear = prevMonthIndex >= 0 ? currentMonth.getFullYear() : currentMonth.getFullYear() - 1;
+
         const lastMonthProgress = await supabase
           .from('monthly_progress')
           .select('exercise_name, max_weight')
           .eq('user_id', user.id)
-          .eq('year', currentMonth.getMonth() === 0 ? currentMonth.getFullYear() - 1 : currentMonth.getFullYear())
-          .eq('month', currentMonth.getMonth() === 0 ? 12 : currentMonth.getMonth());
+          .eq('year', prevYear)
+          .eq('month', prevMonth);
 
         // Calculate progress
         const progressData: MonthlyProgress[] = [];

@@ -21,8 +21,8 @@ const LowerB = () => {
       <div className="space-y-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-success">
-              <Target className="h-6 w-6 text-success-foreground" />
+            <div className="p-2 rounded-lg bg-primary">
+              <Target className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Lower B</h1>

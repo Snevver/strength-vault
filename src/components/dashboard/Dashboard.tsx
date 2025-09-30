@@ -26,8 +26,8 @@ export const Dashboard = () => {
   const quickActions = [
     { name: "Upper A", href: "/upper-a", icon: Zap, description: "Chest Focus", color: "bg-primary" },
     { name: "Upper B", href: "/upper-b", icon: Target, description: "Back Focus", color: "bg-primary" },
-    { name: "Lower A", href: "/lower-a", icon: Zap, description: "Quad Focus", color: "bg-success" },
-    { name: "Lower B", href: "/lower-b", icon: Target, description: "Hamstring Focus", color: "bg-success" },
+    { name: "Lower A", href: "/lower-a", icon: Zap, description: "Quad Focus", color: "bg-primary" },
+    { name: "Lower B", href: "/lower-b", icon: Target, description: "Hamstring Focus", color: "bg-primary" },
   ];
 
   if (loading) {
@@ -83,7 +83,7 @@ export const Dashboard = () => {
             {quickActions.map((action) => (
               <Link key={action.name} to={action.href}>
                 <Button 
-                  className="w-full h-auto p-4 flex flex-col items-center gap-2 btn-touch" 
+                  className="w-full h-auto p-4 flex flex-col items-center gap-2 btn-touch hover:bg-primary hover:text-primary-foreground" 
                   variant="outline"
                 >
                   <div className={`p-2 rounded-lg ${action.color}`}>
@@ -120,7 +120,7 @@ export const Dashboard = () => {
                   .map(p => (
                     <li key={p.exercise_name} className="flex items-center justify-between">
                       <div className="font-medium">{p.exercise_name}</div>
-                      <div className={`text-sm ${p.progress > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>{p.progress > 0 ? `+${p.progress}kg` : `${p.progress}kg`}</div>
+                      <div className={`text-sm ${p.progress > 0 ? 'text-primary' : 'text-muted-foreground'}`}>{p.progress > 0 ? `+${p.progress}kg` : `${p.progress}kg`}</div>
                     </li>
                 ))}
               </ul>

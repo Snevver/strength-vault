@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
+  { name: "Profile", href: "/profile", icon: Dumbbell },
   { name: "Upper A", href: "/upper-a", icon: Zap, description: "Chest Focus" },
   { name: "Upper B", href: "/upper-b", icon: Target, description: "Back Focus" },
   { name: "Lower A", href: "/lower-a", icon: Zap, description: "Quad Focus" },
@@ -85,7 +86,7 @@ export const Navigation = () => {
       <Button
         onClick={handleLogout}
         variant="ghost"
-        className="w-full justify-start gap-3 btn-touch"
+        className="w-full justify-start gap-3 btn-touch hover:bg-primary hover:text-primary-foreground"
       >
         <LogOut className="h-4 w-4" />
         Logout

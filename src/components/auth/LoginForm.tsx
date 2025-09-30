@@ -101,6 +101,9 @@ export const LoginForm = () => {
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
                 </Button>
+                <div className="text-sm text-center mt-2">
+                  <a href="/register" className="text-primary hover:underline">Create an account</a>
+                </div>
               </form>
             </TabsContent>
           </Tabs>

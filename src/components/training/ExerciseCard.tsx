@@ -109,7 +109,7 @@ export const ExerciseCard = ({
             variant="outline"
             size="sm"
             onClick={() => quickAdjust(2.5)}
-            className="btn-touch text-success hover:text-black"
+            className="btn-touch text-primary hover:text-black"
           >
             +2.5kg
           </Button>
@@ -117,7 +117,7 @@ export const ExerciseCard = ({
             variant="outline"
             size="sm"
             onClick={() => quickAdjust(5)}
-            className="btn-touch text-success hover:text-black"
+            className="btn-touch text-primary hover:text-black"
           >
             +5kg
           </Button>
