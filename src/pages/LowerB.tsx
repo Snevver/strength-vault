@@ -6,11 +6,11 @@ import { Target } from "lucide-react";
 import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
-  "RDLs",
+  "Back Extension",
   "Leg Curls",
   "Leg Extensions",
   "Weighted Crunch",
-  "Russian Twists"
+  "Torso Rotation"
 ];
 
 const LowerB = () => {

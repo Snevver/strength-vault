@@ -5,9 +5,47 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TrendingUp, Calendar, Loader2 } from "lucide-react";
 import { useMonthlyProgress } from "@/hooks/useMonthlyProgress";
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 const Progress = () => {
-  const { progressData, availableMonths, loading, getMonthLabel } = useMonthlyProgress();
+  const { progressData, availableMonths, loading, getMonthLabel, refreshProgress, selectedYear, setSelectedYear } = useMonthlyProgress();
+
+  const { toast } = useToast();
+
+  const [snapshotRunning, setSnapshotRunning] = useState(false);
+
+  const triggerSnapshotNow = async () => {
+    try {
+      setSnapshotRunning(true);
+      // Call the new edge function that supports overwriting existing month data
+      const res = await supabase.functions.invoke('monthly-progress-save', {
+        method: 'POST',
+        body: JSON.stringify({ overwrite: true })
+      }) as unknown;
+
+      // supabase.functions.invoke may return a Response-like object; attempt to coerce
+      if (res && typeof res === 'object' && 'status' in res) {
+        const r = res as Response;
+        if (r.status >= 400) {
+          const body = await r.text();
+          throw new Error(body || 'Snapshot function failed');
+        }
+      }
+
+      toast({ title: 'Snapshot started', description: 'Monthly snapshot ran successfully', });
+      // refresh for the currently selected year
+      await refreshProgress(selectedYear);
+    } catch (err) {
+      const e = err as Error | undefined;
+      console.error('Error triggering snapshot:', e);
+      toast({ title: 'Snapshot failed', description: e?.message ?? String(e), variant: 'destructive' });
+    }
+    finally {
+      setSnapshotRunning(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -37,10 +75,28 @@ const Progress = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Exercise Progress Table
-            </CardTitle>
+            <div className="flex items-center gap-2 w-full">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <CardTitle>Exercise Progress Table</CardTitle>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <Button size="sm" onClick={() => { setSelectedYear(selectedYear - 1); void refreshProgress(selectedYear - 1); }}>
+                  ←
+                </Button>
+                <div className="text-sm font-medium">{selectedYear}</div>
+                <Button size="sm" onClick={() => { setSelectedYear(selectedYear + 1); void refreshProgress(selectedYear + 1); }}>
+                  →
+                </Button>
+                <Button size="sm" onClick={triggerSnapshotNow} className="btn-touch" disabled={snapshotRunning}>
+                  {snapshotRunning ? (
+                    <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Running</span>
+                  ) : (
+                    'Run snapshot now'
+                  )}
+                </Button>
+              </div>
+            </div>
             <CardDescription>
               Maximum weights recorded at the start of each month
             </CardDescription>
@@ -52,88 +108,72 @@ const Progress = () => {
                 <p className="text-sm mt-2">Progress will be automatically recorded on the 1st of each month.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
+                <div>
+                  <Table className="table-fixed text-sm">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[200px]">Exercise</TableHead>
-                      {availableMonths.map(month => (
-                        <TableHead key={month} className="text-center min-w-[100px]">
-                          {getMonthLabel(month)}
-                        </TableHead>
-                      ))}
+                        <TableHead className="w-40">Exercise</TableHead>
+                        {availableMonths.map(month => {
+                          const [yr, mo] = month.split('-');
+                          const monthName = new Date(Number(yr), Number(mo) - 1).toLocaleString('en-US', { month: 'short' });
+                          return (
+                            <TableHead key={month} className="text-center w-20">
+                              <div className="flex flex-col items-center">
+                                <div className="text-sm font-medium">{monthName}</div>
+                                <div className="text-xs text-muted-foreground">{yr}</div>
+                              </div>
+                            </TableHead>
+                        );
+                      })}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {progressData.map((exercise) => {
-                      // Only show exercises that have some data
-                      const hasData = Object.values(exercise.months).some(weight => weight > 0);
-                      if (!hasData) return null;
-
-                      return (
+                      {progressData.map((exercise) => (
                         <TableRow key={exercise.exercise_name}>
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium text-sm py-2 px-2">
                             {exercise.exercise_name}
                           </TableCell>
-                          {availableMonths.map(month => {
+                          {availableMonths.map((month, idx) => {
                             const weight = exercise.months[month];
-                            const prevMonthIndex = availableMonths.indexOf(month) - 1;
-                            const prevWeight = prevMonthIndex >= 0 ? 
-                              exercise.months[availableMonths[prevMonthIndex]] : undefined;
-                            
-                            let progressBadge = null;
-                            if (weight && prevWeight) {
-                              const diff = weight - prevWeight;
-                              if (diff > 0) {
-                                progressBadge = (
-                                  <Badge variant="secondary" className="ml-1 text-xs bg-green-100 text-green-800">
-                                    +{diff}kg
-                                  </Badge>
-                                );
-                              } else if (diff < 0) {
-                                progressBadge = (
-                                  <Badge variant="secondary" className="ml-1 text-xs bg-red-100 text-red-800">
-                                    {diff}kg
-                                  </Badge>
-                                );
-                              }
-                            }
+                          const prevWeight = idx > 0 ? exercise.months[availableMonths[idx - 1]] : undefined;
 
-                            return (
-                              <TableCell key={month} className="text-center">
-                                {weight ? (
-                                  <div className="flex items-center justify-center">
-                                    <span>{weight}kg</span>
-                                    {progressBadge}
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground">-</span>
-                                )}
-                              </TableCell>
-                            );
-                          })}
+                          let progressBadge = null;
+                          if (typeof weight === 'number' && typeof prevWeight === 'number') {
+                            const diff = weight - prevWeight;
+                            if (diff > 0) {
+                              progressBadge = (
+                                <Badge variant="secondary" className="ml-1 text-xs bg-green-100 text-green-800">
+                                  +{diff}kg
+                                </Badge>
+                              );
+                            } else if (diff < 0) {
+                              progressBadge = (
+                                <Badge variant="secondary" className="ml-1 text-xs bg-red-100 text-red-800">
+                                  {diff}kg
+                                </Badge>
+                              );
+                            }
+                          }
+
+                          return (
+                            <TableCell key={month} className="text-center text-sm py-1 px-1">
+                              {typeof weight === 'number' ? (
+                                <div className="flex items-center justify-center gap-1">
+                                  <span className="text-sm">{weight}kg</span>
+                                  {progressBadge}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">-</span>
+                              )}
+                            </TableCell>
+                          );
+                        })}
                         </TableRow>
-                      );
-                    })}
+                      ))}
                   </TableBody>
                 </Table>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              How It Works
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>• Every 1st of the month, your current exercise weights are automatically saved</p>
-            <p>• This creates a monthly snapshot of your progress</p>
-            <p>• Green badges show weight increases, red badges show decreases</p>
-            <p>• Keep updating your weights on the training pages to track progress</p>
           </CardContent>
         </Card>
       </div>

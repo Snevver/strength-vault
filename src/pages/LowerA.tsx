@@ -6,7 +6,7 @@ import { Zap } from "lucide-react";
 import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
-  "Squats/Legpress",
+  "Legpress",
   "Leg Extensions",
   "Leg Curls",
   "Bulgarians",

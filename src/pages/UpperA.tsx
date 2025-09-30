@@ -8,10 +8,10 @@ import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
   "Incline Smith",
-  "Flys", 
+  "Pec Flyes", 
   "Shoulder Press",
-  "Pulldown Lat",
-  "Row Cable",
+  "Lat Pulldown",
+  "Cable Row",
   "Bicep Curl",
   "Tricep Overhead"
 ];

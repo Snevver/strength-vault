@@ -8,15 +8,19 @@ import { useWorkoutCalendar } from "@/hooks/useWorkoutCalendar";
 
 const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const { workoutDays, loading, toggleWorkoutDay } = useWorkoutCalendar();
+  const { workoutDays, loading, toggleWorkoutDay, loadMonth } = useWorkoutCalendar();
+  const [pendingDates, setPendingDates] = useState<Set<string>>(new Set());
+
+  const today = new Date();
+  const [displayYear, setDisplayYear] = useState<number>(today.getFullYear());
+  const [displayMonth, setDisplayMonth] = useState<number>(today.getMonth() + 1); // 1-based
 
   const workoutCount = workoutDays.size;
   const currentStreak = 5; // This would be calculated from actual data
 
   const generateCalendarDays = () => {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    const currentMonth = displayMonth - 1; // Date expects 0-based
+    const currentYear = displayYear;
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
@@ -36,7 +40,7 @@ const Calendar = () => {
         day,
         dateString,
         hasWorkout: workoutDays.has(dateString),
-        isToday: day === today.getDate()
+        isToday: (currentYear === today.getFullYear() && (currentMonth + 1) === (today.getMonth() + 1) && day === today.getDate())
       });
     }
     
@@ -74,10 +78,28 @@ const Calendar = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3">
             <Card>
-              <CardHeader>
+                <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
-                  September 2024
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={() => {
+                        // previous month
+                        const prev = new Date(displayYear, displayMonth - 2);
+                        setDisplayYear(prev.getFullYear());
+                        setDisplayMonth(prev.getMonth() + 1);
+                        void loadMonth(prev.getFullYear(), prev.getMonth() + 1);
+                      }}>←</Button>
+                      <div className="text-sm font-medium">{new Date(displayYear, displayMonth - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })}</div>
+                      <Button size="sm" onClick={() => {
+                        // next month
+                        const next = new Date(displayYear, displayMonth);
+                        setDisplayYear(next.getFullYear());
+                        setDisplayMonth(next.getMonth() + 1);
+                        void loadMonth(next.getFullYear(), next.getMonth() + 1);
+                      }}>→</Button>
+                    </div>
+                  </div>
                 </CardTitle>
                 <CardDescription>
                   Click any day to toggle workout status
@@ -112,9 +134,29 @@ const Calendar = () => {
                                 ? "ring-2 ring-primary"
                                 : ""
                             }`}
-                            onClick={() => toggleWorkoutDay(day.dateString)}
+                            onClick={async () => {
+                              if (pendingDates.has(day.dateString)) return;
+                              // mark pending
+                              setPendingDates(prev => new Set(prev).add(day.dateString));
+                              try {
+                                await toggleWorkoutDay(day.dateString);
+                              } finally {
+                                setPendingDates(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(day.dateString);
+                                  return next;
+                                });
+                              }
+                            }}
+                            disabled={pendingDates.has(day.dateString)}
                           >
-                            {day.day}
+                            <div className="flex items-center justify-center w-full">
+                              {pendingDates.has(day.dateString) ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                day.day
+                              )}
+                            </div>
                           </Button>
                         ) : (
                           <div />
@@ -134,84 +176,6 @@ const Calendar = () => {
                       <span>Rest day</span>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Flame className="h-4 w-4" />
-                  Current Streak
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center space-y-2">
-                  <div className="text-3xl font-bold text-success">
-                    {currentStreak}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Days in a row
-                  </div>
-                  <Badge variant="secondary" className="mt-2">
-                    Keep it up! 🔥
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Monthly Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-center p-3 rounded bg-muted/50">
-                    <div className="font-bold text-lg">{workoutCount}</div>
-                    <div className="text-muted-foreground">Workouts</div>
-                  </div>
-                  <div className="text-center p-3 rounded bg-muted/50">
-                    <div className="font-bold text-lg">15</div>
-                    <div className="text-muted-foreground">Goal</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progress</span>
-                    <span>{Math.round((workoutCount / 15) * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className="bg-success h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((workoutCount / 15) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Workout Pattern</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Best day</span>
-                  <Badge variant="outline">Monday</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Avg per week</span>
-                  <Badge variant="outline">3.5</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>Longest streak</span>
-                  <Badge variant="outline">8 days</Badge>
                 </div>
               </CardContent>
             </Card>

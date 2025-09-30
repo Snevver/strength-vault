@@ -6,11 +6,11 @@ import { Target } from "lucide-react";
 import { useExerciseWeights } from "@/hooks/useExerciseWeights";
 
 const exercises = [
-  "Pulldown Beneden",
+  "Lat Pulldown",
   "Wide Row",
   "Chest Press",
-  "Flys",
-  "Lat Raises Cable",
+  "Pec Flyes",
+  "Lateral Raises Cable",
   "Preacher Curl",
   "Tricep Pushdown"
 ];

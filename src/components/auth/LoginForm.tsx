@@ -45,28 +45,6 @@ export const LoginForm = () => {
     setIsLoading(false);
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    const { error } = await signUp(email, password);
-    
-    if (error) {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
-      });
-    }
-
-    setIsLoading(false);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -88,12 +66,7 @@ export const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
+          <Tabs defaultValue="login" className="w-full">            
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -127,43 +100,6 @@ export const LoginForm = () => {
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    required
-                    className="btn-touch"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
-                    required
-                    className="btn-touch"
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full btn-touch" 
-                  disabled={isLoading}
-                >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
                 </Button>
               </form>
             </TabsContent>

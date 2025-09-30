@@ -20,8 +20,6 @@ export const Dashboard = () => {
 
   const quickStats = [
     { label: "Workouts This Month", value: stats.workoutsThisMonth.toString(), icon: Calendar },
-    { label: "Personal Records", value: stats.personalRecords.toString(), icon: Trophy },
-    { label: "Current Streak", value: `${stats.currentStreak} days`, icon: Flame },
     { label: "Total Sessions", value: stats.totalSessions.toString(), icon: BarChart3 },
   ];
 
@@ -56,7 +54,7 @@ export const Dashboard = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {quickStats.map((stat) => (
           <Card key={stat.label}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -104,71 +102,53 @@ export const Dashboard = () => {
         </CardContent>
       </Card>
 
-      {/* Progress Overview & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Top Gains & Heaviest Lifts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Progress Overview
-            </CardTitle>
-            <CardDescription>
-              Your strength gains this month
-            </CardDescription>
+            <CardTitle>Top Gains (since last month)</CardTitle>
+            <CardDescription>Exercises with the biggest increase</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {monthlyProgress.length > 0 ? (
-              monthlyProgress.slice(0, 4).map((progress) => (
-                <div key={progress.exercise_name} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{progress.exercise_name}</span>
-                    <span className={progress.progress > 0 ? "text-success" : progress.progress < 0 ? "text-destructive" : "text-muted-foreground"}>
-                      {progress.progress > 0 ? "+" : ""}{progress.progress}kg
-                    </span>
-                  </div>
-                  <Progress 
-                    value={progress.current_weight > 0 ? Math.min((progress.current_weight / 100) * 100, 100) : 0} 
-                    className="h-2" 
-                  />
-                </div>
-              ))
+          <CardContent>
+            {monthlyProgress.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No progress data</div>
             ) : (
-              <div className="text-center text-muted-foreground py-4">
-                No progress data available. Start tracking your workouts!
-              </div>
+              <ul className="space-y-2">
+                {monthlyProgress
+                  .sort((a, b) => b.progress - a.progress)
+                  .slice(0, 5)
+                  .map(p => (
+                    <li key={p.exercise_name} className="flex items-center justify-between">
+                      <div className="font-medium">{p.exercise_name}</div>
+                      <div className={`text-sm ${p.progress > 0 ? 'text-green-600' : 'text-muted-foreground'}`}>{p.progress > 0 ? `+${p.progress}kg` : `${p.progress}kg`}</div>
+                    </li>
+                ))}
+              </ul>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>
-              Your last 4 workout sessions
-            </CardDescription>
+            <CardTitle>Heaviest Lifts (current)</CardTitle>
+            <CardDescription>Top 5 heaviest current weights</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentWorkouts.length > 0 ? (
-                recentWorkouts.map((workout, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div>
-                      <div className="font-medium">{workout.workout_type}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {new Date(workout.date).toLocaleDateString()} • {workout.exercises} exercises
-                      </div>
-                    </div>
-                    <Badge variant="outline">
-                      {workout.duration}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground py-4">
-                  No recent workouts found. Start your first workout!
-                </div>
-              )}
-            </div>
+            {monthlyProgress.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No weight data</div>
+            ) : (
+              <ul className="space-y-2">
+                {monthlyProgress
+                  .sort((a, b) => b.current_weight - a.current_weight)
+                  .slice(0, 5)
+                  .map(p => (
+                    <li key={p.exercise_name} className="flex items-center justify-between">
+                      <div className="font-medium">{p.exercise_name}</div>
+                      <div className="text-sm">{p.current_weight}kg</div>
+                    </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
       </div>
