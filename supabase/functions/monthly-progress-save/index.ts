@@ -38,6 +38,11 @@ serve(async (req) => {
     const { data: exerciseWeights, error: weightsError } = await supabaseClient
       .from('exercise_weights')
       .select('user_id, exercise_name, current_weight');
+    
+    console.log(`Found ${exerciseWeights?.length || 0} exercise weights to process`);
+    if (exerciseWeights && exerciseWeights.length > 0) {
+      console.log('Sample exercise weights:', exerciseWeights.slice(0, 3));
+    }
 
     if (weightsError) {
       console.error('Error fetching exercise weights:', weightsError);
@@ -88,6 +93,9 @@ serve(async (req) => {
       auto_saved: true
     }));
 
+    console.log(`Prepared ${monthlyProgressRecords.length} records for insertion`);
+    console.log('Sample records to insert:', monthlyProgressRecords.slice(0, 2));
+
     // Insert or update monthly progress records
     const { error: insertError } = await supabaseClient
       .from('monthly_progress')
@@ -101,6 +109,20 @@ serve(async (req) => {
     }
 
     console.log(`Successfully saved ${monthlyProgressRecords.length} monthly progress records`);
+    
+    // Verify the records were actually inserted
+    const { data: verifyRecords, error: verifyError } = await supabaseClient
+      .from('monthly_progress')
+      .select('*')
+      .eq('year', snapshotYear)
+      .eq('month', snapshotMonth)
+      .eq('auto_saved', true);
+    
+    if (verifyError) {
+      console.error('Error verifying inserted records:', verifyError);
+    } else {
+      console.log(`Verification: Found ${verifyRecords?.length || 0} records in database for ${snapshotYear}-${snapshotMonth}`);
+    }
 
     return new Response(
       JSON.stringify({ 

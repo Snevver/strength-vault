@@ -8,6 +8,8 @@ export const applyPrimaryHsl = (hsl: string) => {
   document.documentElement.style.setProperty("--primary", hsl);
   // Keep a readable foreground; assume white works for darker colors
   document.documentElement.style.setProperty("--primary-foreground", "0 0% 100%");
+  // Use the primary color for focus rings by default so inputs adopt user-selected color
+  document.documentElement.style.setProperty("--ring", hsl);
 };
 
 export const savePrimaryHsl = (hsl: string) => {

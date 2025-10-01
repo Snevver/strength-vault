@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,7 +102,9 @@ export const LoginForm = () => {
                   Sign In
                 </Button>
                 <div className="text-sm text-center mt-2">
-                  <a href="/register" className="text-primary hover:underline">Create an account</a>
+                  <Link to="/register" className="text-primary hover:underline">
+                    Create an account
+                  </Link>
                 </div>
               </form>
             </TabsContent>

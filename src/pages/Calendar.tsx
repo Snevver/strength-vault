@@ -24,7 +24,7 @@ const Calendar = () => {
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+    const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Convert Sunday=0 to Saturday=6, Monday=0
     
     const days = [];
     
@@ -109,13 +109,13 @@ const Calendar = () => {
                 <div className="space-y-4">
                   {/* Calendar Header */}
                   <div className="grid grid-cols-7 gap-2 text-sm font-medium text-muted-foreground text-center">
-                    <div>Sun</div>
                     <div>Mon</div>
                     <div>Tue</div>
                     <div>Wed</div>
                     <div>Thu</div>
                     <div>Fri</div>
                     <div>Sat</div>
+                    <div>Sun</div>
                   </div>
                   
                   {/* Calendar Grid */}

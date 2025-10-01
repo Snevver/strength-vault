@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { Dumbbell, Loader2 } from "lucide-react";
 export const RegisterForm = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { toast } = useToast();
@@ -24,6 +25,25 @@ export const RegisterForm = () => {
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (password !== confirmPassword) {
+            toast({
+                title: "Password mismatch",
+                description: "Passwords do not match. Please try again.",
+                variant: "destructive",
+            });
+            return;
+        }
+        
+        if (password.length < 6) {
+            toast({
+                title: "Password too short",
+                description: "Password must be at least 6 characters long.",
+                variant: "destructive",
+            });
+            return;
+        }
+        
         setIsLoading(true);
 
         const { error } = await signUp(email, password);
@@ -86,7 +106,20 @@ export const RegisterForm = () => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Choose a secure password"
+                                placeholder="Choose a secure password (min. 6 characters)"
+                                required
+                                className="btn-touch"
+                                minLength={6}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Input
+                                id="confirmPassword"
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Confirm your password"
                                 required
                                 className="btn-touch"
                             />
@@ -95,6 +128,11 @@ export const RegisterForm = () => {
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Create account
                         </Button>
+                        <div className="text-sm text-center mt-2">
+                            <Link to="/login" className="text-primary hover:underline">
+                                Already have an account? Sign in
+                            </Link>
+                        </div>
                     </form>
                 </CardContent>
             </Card>
