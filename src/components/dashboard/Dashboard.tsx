@@ -83,10 +83,10 @@ export const Dashboard = () => {
             {quickActions.map((action) => (
               <Link key={action.name} to={action.href}>
                 <Button 
-                  className="w-full h-auto p-4 flex flex-col items-center gap-2 btn-touch hover:bg-primary hover:text-primary-foreground" 
+                  className="group w-full h-auto p-4 flex flex-col items-center gap-2 btn-touch hover:bg-primary hover:text-primary-foreground" 
                   variant="outline"
                 >
-                  <div className={`p-2 rounded-lg ${action.color}`}>
+                  <div className={`p-2 rounded-lg border-2 border-transparent group-hover:border-black transition-colors ${action.color}`}>
                     <action.icon className="h-6 w-6 text-white" />
                   </div>
                   <div className="text-center">

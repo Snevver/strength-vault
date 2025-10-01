@@ -17,7 +17,7 @@ const canonicalMap: Record<string, string> = {
   'pulldown beneden': 'Lat Pulldown',
   'pulldown': 'Lat Pulldown',
   'flys': 'Pec Flyes',
-  'pec flys': 'Pec Flyes',
+  'Pec Flys': 'Pec Flyes',
   'row cable': 'Cable Row',
   'cable row': 'Cable Row'
   ,

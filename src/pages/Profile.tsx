@@ -5,23 +5,69 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { applyPrimaryHsl, savePrimaryHsl, hexToHslString, LOCAL_KEY, savePrimaryHex, LOCAL_HEX_KEY } from "@/lib/theme";
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const DEFAULT_HEX = "#1ec06f"; // green-ish default (converted to HSL in CSS already)
 
 const Profile = () => {
     const { toast } = useToast();
     const [hex, setHex] = useState<string>(DEFAULT_HEX);
+    const { user, loading: authLoading } = useAuth();
 
     useEffect(() => {
-        try {
-            const savedHex = localStorage.getItem(LOCAL_HEX_KEY);
-            if (savedHex) setHex(savedHex);
-        } catch (e) {
-            // ignore localStorage errors
-        }
-    }, []);
+        let mounted = true;
 
-    const handleApply = () => {
+        const loadLocal = () => {
+            try {
+                const savedHex = localStorage.getItem(LOCAL_HEX_KEY);
+                if (savedHex && mounted) setHex(savedHex);
+            } catch (e) {
+                // ignore localStorage errors
+            }
+        };
+
+        loadLocal();
+
+        // If logged in, try to load from DB (user_settings.key = 'primary-hex')
+        const loadFromDb = async () => {
+            if (!user) return;
+            try {
+                const { data, error } = await supabase
+                    .from('user_settings')
+                    .select('value')
+                    .eq('user_id', user.id)
+                    .eq('key', 'primary-hex')
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    // ignore not found (PGRST116) and other transient errors
+                    console.warn('Failed to load user setting primary-hex', error);
+                }
+
+                if (data && mounted) {
+                    setHex(data.value);
+                    // also apply immediately
+                    const hsl = hexToHslString(data.value);
+                    if (hsl) {
+                        applyPrimaryHsl(hsl);
+                        savePrimaryHsl(hsl);
+                        savePrimaryHex(data.value);
+                    }
+                }
+            } catch (e) {
+                console.warn('Error loading primary-hex from DB', e);
+            }
+        };
+
+        if (!authLoading) loadFromDb();
+
+        return () => {
+            mounted = false;
+        };
+    }, [authLoading, user]);
+
+    const handleApply = async () => {
         const hsl = hexToHslString(hex);
         if (!hsl) {
             toast({ title: "Invalid color", description: "Please enter a valid hex color like #1ec06f", variant: "destructive" });
@@ -30,7 +76,30 @@ const Profile = () => {
         applyPrimaryHsl(hsl);
         savePrimaryHsl(hsl);
         savePrimaryHex(hex);
-        toast({ title: "Theme updated", description: "Primary color has been updated." });
+
+        // Persist to Supabase if logged in
+        try {
+            if (typeof window !== 'undefined') {
+                const session = await supabase.auth.getSession();
+                const userId = session.data.session?.user?.id;
+                if (userId) {
+                    // upsert into user_settings table
+                    const { error } = await supabase.from('user_settings').upsert({
+                        user_id: userId,
+                        key: 'primary-hex',
+                        value: hex,
+                    }, { onConflict: ['user_id','key'] });
+
+                    if (error) {
+                        console.warn('Failed to persist primary-hex to DB', error);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Error saving primary-hex to Supabase', e);
+        }
+
+        toast({ title: "Theme updated", description: "Primary color has been updated and saved." });
     };
 
     const handleReset = () => {

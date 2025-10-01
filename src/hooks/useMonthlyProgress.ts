@@ -17,7 +17,7 @@ export const useMonthlyProgress = () => {
   const allExercises = [
     // Upper A
     'Incline Smith',
-    'Pec Flys',
+    'Pec Flyes',
     'Shoulder Press',
     'Lat Pulldown',
     'Cable Row',
